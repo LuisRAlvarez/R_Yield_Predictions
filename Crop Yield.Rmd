@@ -18,6 +18,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(dplyr)
 library(lubridate)
+library(tidyverse)
+library(corrplot)
 ```
 
 ```{r Download Data}
@@ -94,10 +96,43 @@ dt2$time <- scale(dt2$time) # transform variable for ease of use
 
 # Drop date_time and original datetime columns
 dt2[c("datetime", "datetime_column")] <- NULL
+
 ```
 
+```{r dentisty plots}
+#Get density plots for all variables
+dt2 %>% keep(is.numeric) %>% gather() %>% ggplot(aes(value)) + facet_wrap(~ key, scales = "free")+geom_density(color="blue", fill="red")
+
+```
 
 ```{r}
+# Numeric variables
+num_vars <- dt2[,sapply(dt2,is.numeric)]
+# Factor variables
+factors_ <- lapply(dt2[, variables_to_convert], unique)
+factors_
+
+# Matrix
+mat<-cor(num_vars)
+# Fancy graph for correlation matrix
+corrplot(mat, method = "ellipse") # very little multicollinearity. This is good. # https://www.youtube.com/watch?v=jxUiIFj2l-s
+
+```
+
+```{r}
+# EDA
+# average moisture by year, month for each field = bar graphs
+# average crop flow for each field by year
+# plot moisture for fields by year
+```
+
+```{r}
+# random sample of 1000 points hold out test set
+# base model
+# linear regression
+
+# 
+
 
 ```
 
