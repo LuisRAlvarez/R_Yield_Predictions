@@ -67,11 +67,6 @@ dt2 <- select(dt1,longitude, latitude, crop_flow_lb_s, datetime, duration,
               distance_in,swth_wdth_in, moisture, status, pass_num, serial_number, field,elevation_ft)
 ```
 
-
-```{r subset columns}
-```
-
-
 ```{r subset columns}
 data_types2 <- sapply(dt2,class)
 data_types2
