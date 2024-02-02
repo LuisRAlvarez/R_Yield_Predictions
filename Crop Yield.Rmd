@@ -1,0 +1,96 @@
+---
+title: "Crop Yield "
+author: "Luis R. Alvarez"
+date: "`r Sys.Date()`"
+output: pdt2_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+# Data set title: Precision Agriculture Yield Monitoring in Row Crop Agriculture at the Kellogg Biological Station, Hickory Corners, MI  (1996 to 2013).
+# Data set creator:  G. Robertson - Michigan State University 
+# Metadata Link: https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-kbs.37.23
+
+```{r}
+library(dplyr)
+library(lubridate)
+```
+
+```{r Download Data}
+# pluck data from url
+url_download  <- "https://pasta.lternet.edu/package/data/eml/knb-lter-kbs/37/23/610992a4f20d12c39908281b822291a6" 
+# temporary gadget
+file_download <- tempfile()
+#  ingest file with curl command, check for NAs, and download
+try(download.file(url_download, file_download,method="curl"))
+if (is.na(file.size(file_download))) download.file(url_download,file_download,method="auto")
+
+# read file and instantiate local data frame 
+  dt1 <-read.csv(file_download,header=F, skip=34, sep=",",quot='"', 
+                 col.names=c(
+                    "longitude",     
+                    "latitude",     
+                    "crop_flow_lb_s",     
+                    "datetime",     
+                    "duration",     
+                    "distance_in",     
+                    "swth_wdth_in",     
+                    "moisture",     
+                    "status",     
+                    "pass_num",     
+                    "serial_number",     
+                    "field",     
+                    "dataset",     
+                    "product",     
+                    "elevation_ft"), check.names=TRUE)
+# close reading of file               
+unlink(file_download)
+
+
+```
+
+```{r}
+# read column names and data types
+data_types <- sapply(dt1,class)
+data_types
+
+# subset columns by reviewing merit of each
+dt2 <- select(dt1,longitude, latitude, crop_flow_lb_s, datetime, duration, 
+              distance_in,swth_wdth_in, moisture, status, pass_num, serial_number, field,elevation_ft)
+
+data_types2 <- sapply(dt2,class)
+data_types2
+```
+
+```{r}
+# Rename variables as factors
+variables_to_convert <- c("swth_wdth_in",
+                          "serial_number",
+                          "field",
+                          "pass_num",
+                          "duration")
+
+# Using lapply for concise conversion
+dt2[variables_to_convert] <- lapply(dt2[variables_to_convert], as.factor)
+data_types2 <- sapply(dt2,class)
+
+# rename variable as logical
+dt2$status <- lapply(dt2$status, as.logical)
+
+
+# Convert the datetime column to a POSIXct object ((in lubridate))
+dt2$datetime_column <- ymd_hms(dt2$datetime)
+
+# Extract year, month, day, and time components
+dt2$year <- year(dt2$datetime_column)
+dt2$month <- month(dt2$datetime_column)
+dt2$day <- day(dt2$datetime_column)
+dt2$time <- format(dt2$datetime_column, format = "%H:%M:%S")
+
+# Drop date_time and original datetime columns
+dt2[c("datetime", "datetime_column")] <- NULL
+```
