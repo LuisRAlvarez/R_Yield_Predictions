@@ -53,7 +53,7 @@ unlink(file_download)
 
 ```
 
-```{r}
+```{r subset columns}
 # read column names and data types
 data_types <- sapply(dt1,class)
 data_types
@@ -66,7 +66,7 @@ data_types2 <- sapply(dt2,class)
 data_types2
 ```
 
-```{r}
+```{r Subset Variables}
 # Rename variables as factors
 variables_to_convert <- c("swth_wdth_in",
                           "serial_number",
@@ -89,8 +89,15 @@ dt2$datetime_column <- ymd_hms(dt2$datetime)
 dt2$year <- year(dt2$datetime_column)
 dt2$month <- month(dt2$datetime_column)
 dt2$day <- day(dt2$datetime_column)
-dt2$time <- format(dt2$datetime_column, format = "%H:%M:%S")
+dt2$time <- hms::as_hms(dt2$datetime_column) # convert character dtype to hours min seconds.
+dt2$time <- scale(dt2$time) # transform variable for ease of use
 
 # Drop date_time and original datetime columns
 dt2[c("datetime", "datetime_column")] <- NULL
 ```
+
+
+```{r}
+
+```
+
