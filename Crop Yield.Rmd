@@ -3,6 +3,7 @@ title: "Crop Yield "
 author: "Luis R. Alvarez"
 date: "`r Sys.Date()`"
 output: pdt2_document
+
 ---
 
 ```{r setup, include=FALSE}
