@@ -178,9 +178,12 @@ summary(lm_mod1)
 ```{r rmse}
 # view leverage vs residuals plots
 plot(lm_mod1)
-
+# todo
+# describe the observations on base model and assumptions for data
 #rmse
 rmse <- sqrt(mean(resid(lm_mod1)))
+
+#
 ```
 
 
