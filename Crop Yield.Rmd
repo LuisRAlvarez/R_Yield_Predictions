@@ -3,7 +3,6 @@ title: "Crop Yield "
 author: "Luis R. Alvarez"
 date: "`r Sys.Date()`"
 output: pdt2_document
-
 ---
 
 ```{r setup, include=FALSE}
@@ -15,6 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 # Data set title: Precision Agriculture Yield Monitoring in Row Crop Agriculture at the Kellogg Biological Station, Hickory Corners, MI  (1996 to 2013).
 # Data set creator:  G. Robertson - Michigan State University 
 # Metadata Link: https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-kbs.37.23
+
+## Runtime for notebook is about 12 min through Linear model
 
 ```{r}
 library(dplyr)
@@ -65,7 +66,7 @@ data_types
 
 # subset columns by reviewing merit of each
 dt2 <- select(dt1,longitude, latitude, crop_flow_lb_s, datetime, duration, 
-              distance_in,swth_wdth_in, moisture, status, pass_num, serial_number, field,elevation_ft)
+              distance_in,swth_wdth_in, moisture, status, pass_num, serial_number, field,elevation_ft, product)
 ```
 
 ```{r subset columns}
@@ -80,7 +81,9 @@ variables_to_convert <- c("swth_wdth_in",
                           "field",
                           "pass_num",
                           "duration",
-                          "status")
+                          "status",
+                          "product")
+ 
 
 # Using lapply for concise conversion
 dt2[variables_to_convert] <- lapply(dt2[variables_to_convert], as.factor)
@@ -101,13 +104,18 @@ dt2$time <- hms::as_hms(dt2$datetime_column) # convert character dtype to hours 
 dt2$time <- scale(dt2$time) # transform variable for ease of use
 
 # Drop date_time and original datetime columns
+
 dt2[c("datetime", "datetime_column")] <- NULL
 
-```
+
+
+ 
+
+``` 
 
 ```{r dentisty plots}
 #Get density plots for all variables
-dt2 %>% keep(is.numeric) %>% gather() %>% ggplot(aes(value)) + facet_wrap(~ key, scales = "free")+geom_density(color="blue", fill='green')
+dt2 %>% keep(is.numeric) %>% gather() %>% ggplot(aes(value)) + facet_wrap(~ key, scales = "free")+geom_density(color="blue")
 
 ```
 
@@ -154,7 +162,7 @@ corrplot(mat, method = "ellipse") # visualize collinearity
 # linear regression
 start_time <- Sys.time()
 lm_mod1 <- glm(crop_flow_lb_s ~ ., data = dt2)
-influence_values <- influence.measures(lm_mod1)
+#influence_values <- influence.measures(lm_mod1)
 
 
 end_time <- Sys.time()
@@ -162,35 +170,17 @@ elapsed_time <- end_time - start_time
 print(elapsed_time)
 
 ```
-
-```{r save base model}
-# Parse model
-glmparsed <- parse_model(model)
-
-```
-
-
 ```{r}
-# Extract residuals and leverage values
-residuals <- influence_values$residuals
-leverage <- influence_values$hat
-
-# Plot residuals vs leverage
-plot(leverage, residuals, main = "Residuals vs Leverage", 
-     xlab = "Leverage", ylab = "Residuals", pch = 19)
-
-# Add a reference line for identifying influential points
-abline(h = 0, col = "red", lty = 2)
-# Extract residuals and leverage values
-residuals <- influence_values$residuals
-leverage <- influence_values$hat
-
-# Plot residuals vs leverage
-plot(leverage, residuals, main = "Residuals vs Leverage", 
-     xlab = "Leverage", ylab = "Residuals", pch = 19)
-
-# Add a reference line for identifying influential points
-abline(h = 0, col = "red", lty = 2)
-
+summary(lm_mod1)
 ```
+
+
+```{r rmse}
+# view leverage vs residuals plots
+plot(lm_mod1)
+
+#rmse
+rmse <- sqrt(mean(resid(lm_mod1)))
+```
+
 
